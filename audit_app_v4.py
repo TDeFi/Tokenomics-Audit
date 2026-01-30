@@ -27,7 +27,8 @@ st.set_page_config(
 # -----------------------------
 def get_openai_api_key() -> str:
     key = os.environ.get("OPENAI_API_KEY", "").strip()
-
+fp = hashlib.sha256(key.encode()).hexdigest()[:12]
+print(f"[OpenAI DEBUG] len={len(key)} prefix={key[:10]} fp={fp}")
     if not key:
         raise RuntimeError("OPENAI_API_KEY is missing in environment variables (Render).")
 
