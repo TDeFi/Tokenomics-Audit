@@ -20,10 +20,20 @@ from typing import Optional
 # -----------------------------
 # Helper: Safe OpenAI API key retrieval
 # -----------------------------
+def get_openai_client():
+    key = os.environ.get("OPENAI_API_KEY", "").strip()
 
-client = OpenAI(api_key=os.environ["OPENAI_API_KEY"].strip())
+    if not key:
+        raise RuntimeError("OPENAI_API_KEY missing")
 
+    if not key.startswith("sk-"):
+        raise RuntimeError("OPENAI_API_KEY malformed")
 
+    return key
+
+from openai_client import get_openai_client
+
+client = OpenAI(api_key=get_openai_client())
 # -----------------------------
 # Streamlit page config + CSS
 # -----------------------------
