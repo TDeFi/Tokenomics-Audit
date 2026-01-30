@@ -27,34 +27,28 @@ st.set_page_config(
 # -----------------------------
 def get_openai_api_key() -> str:
     key = os.environ.get("OPENAI_API_KEY", "").strip()
-fp = hashlib.sha256(key.encode()).hexdigest()[:12]
-print(f"[OpenAI DEBUG] len={len(key)} prefix={key[:10]} fp={fp}")
+
     if not key:
         raise RuntimeError("OPENAI_API_KEY is missing in environment variables (Render).")
 
     if "****" in key:
-        raise RuntimeError("OPENAI_API_KEY looks masked (contains ****). Paste the full key.")
+        raise RuntimeError("OPENAI_API_KEY looks masked (contains ****).")
 
     if "\n" in key or "\r" in key:
-        raise RuntimeError("OPENAI_API_KEY contains a newline. Re-paste it as a single line.")
-
-    if key.startswith(("'", '"')) or key.endswith(("'", '"')):
-        raise RuntimeError("OPENAI_API_KEY includes quotes. Remove quotes in Render env var value.")
-
-    if len(key) < 60:
-        raise RuntimeError(f"OPENAI_API_KEY looks too short ({len(key)} chars). Likely truncated.")
+        raise RuntimeError("OPENAI_API_KEY contains a newline.")
 
     if not key.startswith("sk-"):
-        raise RuntimeError("OPENAI_API_KEY format looks wrong (should start with 'sk-').")
+        raise RuntimeError("OPENAI_API_KEY format looks wrong.")
 
-    # ✅ Debug safely in server logs (NOT Streamlit UI before page config)
-    fp = hashlib.sha256(key.encode()).hexdigest()[:12]
-    print(f"[OpenAI] key_fingerprint={fp} len={len(key)} prefix={key[:10]}")
+    # debug (safe)
+    import hashlib
+    print(
+        f"[OpenAI DEBUG] len={len(key)} "
+        f"prefix={key[:10]} "
+        f"fp={hashlib.sha256(key.encode()).hexdigest()[:12]}"
+    )
 
     return key
-
-# ❌ REMOVE this global client creation:
-# client = OpenAI(api_key=get_openai_api_key())
 
 # -----------------------------
 # Streamlit page config + CSS
