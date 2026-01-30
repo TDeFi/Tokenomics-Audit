@@ -1014,7 +1014,7 @@ if generate:
         analysis_prompt = build_structured_prompt(metrics)
 
         response = client.chat.completions.create(
-            model="gpt-5-nano",
+            model="gpt-4o-mini",
             messages=[
                 {"role": "system", "content": "You are a senior tokenomics audit analyst."},
                 {"role": "user", "content": analysis_prompt}
