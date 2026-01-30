@@ -8,7 +8,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from fpdf import FPDF
 import tempfile
-import os
+import os, hashlib
 import re
 import io
 import json
@@ -20,20 +20,29 @@ from typing import Optional
 # -----------------------------
 # Helper: Safe OpenAI API key retrieval
 # -----------------------------
-def get_openai_client():
+
+def get_openai_api_key() -> str:
     key = os.environ.get("OPENAI_API_KEY", "").strip()
 
     if not key:
-        raise RuntimeError("OPENAI_API_KEY missing")
+        raise RuntimeError("OPENAI_API_KEY is missing in environment variables (Render).")
+
+    if "****" in key:
+        raise RuntimeError("OPENAI_API_KEY looks masked (contains ****). Paste the full key.")
+
+    if "\n" in key or "\r" in key:
+        raise RuntimeError("OPENAI_API_KEY contains a newline. Re-paste it as a single line.")
 
     if not key.startswith("sk-"):
-        raise RuntimeError("OPENAI_API_KEY malformed")
+        raise RuntimeError("OPENAI_API_KEY format looks wrong (should start with 'sk-').")
+
+    # Safe fingerprint for debugging (does not reveal the key)
+    st.caption("OpenAI key fingerprint: " + hashlib.sha256(key.encode()).hexdigest()[:12])
 
     return key
 
-from openai_client import get_openai_client
+client = OpenAI(api_key=get_openai_api_key())
 
-client = OpenAI(api_key=get_openai_client())
 # -----------------------------
 # Streamlit page config + CSS
 # -----------------------------
