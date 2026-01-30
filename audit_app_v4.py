@@ -20,18 +20,9 @@ from typing import Optional
 # -----------------------------
 # Helper: Safe OpenAI API key retrieval
 # -----------------------------
-def get_openai_api_key():
-    env_key = os.environ.get("OPENAI_API_KEY")
-    if env_key:
-        return env_key
-    try:
-        if hasattr(st, "secrets") and hasattr(st.secrets, "__getitem__"):
-            openai_section = st.secrets.get("openai") if hasattr(st.secrets, "get") else None
-            if openai_section and isinstance(openai_section, dict):
-                return openai_section.get("api_key")
-    except Exception:
-        pass
-    return None
+
+client = OpenAI(api_key=os.environ["OPENAI_API_KEY"].strip())
+
 
 # -----------------------------
 # Streamlit page config + CSS
