@@ -20,18 +20,29 @@ from typing import Optional
 # -----------------------------
 # Helper: Safe OpenAI API key retrieval
 # -----------------------------
-def get_openai_api_key():
-    env_key = os.environ.get("OPENAI_API_KEY")
-    if env_key:
-        return env_key
+
+def get_openai_api_key() -> str:
+    # Prefer Streamlit secrets in production if you use them
+    key = None
     try:
-        if hasattr(st, "secrets") and hasattr(st.secrets, "__getitem__"):
-            openai_section = st.secrets.get("openai") if hasattr(st.secrets, "get") else None
-            if openai_section and isinstance(openai_section, dict):
-                return openai_section.get("api_key")
+        key = st.secrets.get("OPENAI_API_KEY")  # simplest secrets layout
     except Exception:
         pass
-    return None
+
+    if not key:
+        key = os.getenv("OPENAI_API_KEY")
+
+    if not key:
+        raise RuntimeError("OPENAI_API_KEY is missing. Set it in Render env vars or Streamlit secrets.")
+
+    # Remove hidden whitespace/newlines that often break keys
+    key = key.strip()
+
+    # Basic sanity check
+    if not key.startswith("sk-"):
+        raise RuntimeError("OPENAI_API_KEY doesn't look right (should start with 'sk-').")
+
+    return key
 
 # -----------------------------
 # Streamlit page config + CSS
