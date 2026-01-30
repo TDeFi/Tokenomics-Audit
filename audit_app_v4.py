@@ -20,29 +20,18 @@ from typing import Optional
 # -----------------------------
 # Helper: Safe OpenAI API key retrieval
 # -----------------------------
-
-def get_openai_api_key() -> str:
-    # Prefer Streamlit secrets in production if you use them
-    key = None
+def get_openai_api_key():
+    env_key = os.environ.get("OPENAI_API_KEY")
+    if env_key:
+        return env_key
     try:
-        key = st.secrets.get("OPENAI_API_KEY")  # simplest secrets layout
+        if hasattr(st, "secrets") and hasattr(st.secrets, "__getitem__"):
+            openai_section = st.secrets.get("openai") if hasattr(st.secrets, "get") else None
+            if openai_section and isinstance(openai_section, dict):
+                return openai_section.get("api_key")
     except Exception:
         pass
-
-    if not key:
-        key = os.getenv("OPENAI_API_KEY")
-
-    if not key:
-        raise RuntimeError("OPENAI_API_KEY is missing. Set it in Render env vars or Streamlit secrets.")
-
-    # Remove hidden whitespace/newlines that often break keys
-    key = key.strip()
-
-    # Basic sanity check
-    if not key.startswith("sk-"):
-        raise RuntimeError("OPENAI_API_KEY doesn't look right (should start with 'sk-').")
-
-    return key
+    return None
 
 # -----------------------------
 # Streamlit page config + CSS
@@ -1014,7 +1003,7 @@ if generate:
         analysis_prompt = build_structured_prompt(metrics)
 
         response = client.chat.completions.create(
-            model="gpt-4o-mini",
+            model="gpt-4o",
             messages=[
                 {"role": "system", "content": "You are a senior tokenomics audit analyst."},
                 {"role": "user", "content": analysis_prompt}
