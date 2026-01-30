@@ -1,7 +1,11 @@
-streamlit
-pandas
-numpy
-matplotlib
-openai
-fpdf2
-openpyxl
+streamlit==1.41.1
+openai>=1.60.0
+pandas>=2.2.0
+numpy>=2.0.0
+matplotlib>=3.9.0
+fpdf2>=2.8.0
+
+# Excel support for your template builder and upload parsing
+openpyxl>=3.1.5
+xlsxwriter>=3.2.0
+
