@@ -14,13 +14,17 @@ import io
 import json
 import base64
 from openai import OpenAI
-
 from typing import Optional
+
+st.set_page_config(
+    page_title="Tokenomics Audit AI",
+    layout="wide",
+    initial_sidebar_state="collapsed"
+)
 
 # -----------------------------
 # Helper: Safe OpenAI API key retrieval
 # -----------------------------
-
 def get_openai_api_key() -> str:
     key = os.environ.get("OPENAI_API_KEY", "").strip()
 
@@ -33,24 +37,27 @@ def get_openai_api_key() -> str:
     if "\n" in key or "\r" in key:
         raise RuntimeError("OPENAI_API_KEY contains a newline. Re-paste it as a single line.")
 
+    if key.startswith(("'", '"')) or key.endswith(("'", '"')):
+        raise RuntimeError("OPENAI_API_KEY includes quotes. Remove quotes in Render env var value.")
+
+    if len(key) < 60:
+        raise RuntimeError(f"OPENAI_API_KEY looks too short ({len(key)} chars). Likely truncated.")
+
     if not key.startswith("sk-"):
         raise RuntimeError("OPENAI_API_KEY format looks wrong (should start with 'sk-').")
 
-    # Safe fingerprint for debugging (does not reveal the key)
-    st.caption("OpenAI key fingerprint: " + hashlib.sha256(key.encode()).hexdigest()[:12])
+    # ✅ Debug safely in server logs (NOT Streamlit UI before page config)
+    fp = hashlib.sha256(key.encode()).hexdigest()[:12]
+    print(f"[OpenAI] key_fingerprint={fp} len={len(key)} prefix={key[:10]}")
 
     return key
 
-client = OpenAI(api_key=get_openai_api_key())
+# ❌ REMOVE this global client creation:
+# client = OpenAI(api_key=get_openai_api_key())
 
 # -----------------------------
 # Streamlit page config + CSS
 # -----------------------------
-st.set_page_config(
-    page_title="Tokenomics Audit AI",
-    layout="wide",
-    initial_sidebar_state="collapsed"
-)
 
 st.markdown("""
 <style>
